@@ -6,16 +6,16 @@ const regd_users = express.Router();
 
 let users = [];
 
-const isValid = (username)=>{ //returns boolean
-//write code to check is the username is valid
+const isValid = (username) => { //returns boolean
+    //write code to check is the username is valid
 }
 
-const authenticatedUser = (username,password)=>{ //returns boolean
-// Filter the users array for any user with the same username and password
-    let validusers  = users.filter((user) => {
-    return (user.username === username && user.password === password);
+const authenticatedUser = (username, password) => { //returns boolean
+    // Filter the users array for any user with the same username and password
+    let validusers = users.filter((user) => {
+        return (user.username === username && user.password === password);
     });
-    if(validusers.length > 0) {
+    if (validusers.length > 0) {
         return true;
     } else {
         return false;
@@ -23,63 +23,90 @@ const authenticatedUser = (username,password)=>{ //returns boolean
 }
 
 //only registered users can login
-regd_users.post("/login", (req,res) => {
-  //Write your code here
-  const username = req.body.username;
-  const password = req.body.password;
+regd_users.post("/login", (req, res) => {
+    //Write your code here
+    const username = req.body.username;
+    const password = req.body.password;
 
-  if(!username || !password) {
-    return res.status(404).json({message:"Error logging in"});
-  }
-  // authenticate user
-  if(authenticatedUser(username, password)) {
-    // Generate JWT access token
-    let accessToken = jwt.sign({
-        data:password
-    }, 'access', {expiresIn: '4h'});
+    if (!username || !password) {
+        return res.status(404).json({ message: "Error logging in" });
+    }
+    // authenticate user
+    if (authenticatedUser(username, password)) {
+        // Generate JWT access token
+        let accessToken = jwt.sign({
+            data: password
+        }, 'access', { expiresIn: '4h' });
 
-    // Store access token and username in session
-    req.session.authorization = {accessToken, username};
-    req.session.save(() => {
-        console.log(req.session);
-        return res.status(200).send("User successfully logged in");
-      });
-  } else {
-    return res.status(208).send("Invalid Login. Check username and password");
-  }
+        // Store access token and username in session
+        req.session.authorization = { accessToken, username };
+        req.session.save(() => {
+            console.log(req.session);
+            return res.status(200).send("User successfully logged in");
+        });
+    } else {
+        return res.status(208).send("Invalid Login. Check username and password");
+    }
 
 
 });
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  const review_param = req.query.review;
-  const username = req.session.authorization.username;
-  const isbn = req.params.isbn;
-  
-  let book = books[isbn];
-  
-    if(book) {
-        
+    //Write your code here
+    const review_param = req.query.review;
+    const username = req.session.authorization.username;
+    const isbn = req.params.isbn;
+
+    let book = books[isbn];
+
+    if (book) {
+
         //get review list
         //let reviews = Object.values(book["reviews"]);
         if (!book.reviews) {
-           book.reviews = {};
+            book.reviews = {};
         }
         //if exists -> update
         if (book.reviews[username]) {
             book.reviews[username].comment = review_param;
             return res.status(200).send("Review updated!");
         }
-        
+
         // If not → add new
         book.reviews[username] = {
-        user: username,
-        comment: review_param
+            user: username,
+            comment: review_param
         }
         console.log(books);
         return res.status(200).send("Review added!");
+    } else {
+        return res.status(404).send("Not found any book!");
+    }
+});
+
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+    //Write your code here
+    const username = req.session.authorization.username;
+    const isbn = req.params.isbn;
+
+    let book = books[isbn];
+
+    if (book) {
+
+        if (!book.reviews) {
+            book.reviews = {};
+        } else {
+            //if exists -> delete
+            if (book.reviews[username]) {
+                delete book.reviews[username]
+                return res.status(200).send("Review deleted!");
+            }
+
+            // If not → return
+            return res.status(200).send("Not find any review of this user!");
+        }
+
     } else {
         return res.status(404).send("Not found any book!");
     }
