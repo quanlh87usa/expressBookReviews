@@ -7,14 +7,14 @@ const public_users = express.Router();
 
 public_users.post("/register", (req,res) => {
   //Write your code here
-  let username = req.params.username;
-  let password =  req.params.password;
+  let username = req.body.username;
+  let password =  req.body.password;
 
   if(username && password) {
     // check exit
     let user = users.filter(user => user.username == username);
     console.log(user);
-    if(!user) {
+    if(user.length == 0) {
         // if not exists , do register.
         users.push({"username": username, "password": password});
         res.send("User successfully registered. Now you can login");
