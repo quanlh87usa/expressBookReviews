@@ -36,7 +36,7 @@ regd_users.post("/login", (req,res) => {
     // Generate JWT access token
     let accessToken = jwt.sign({
         data:password
-    }, 'access', {expiresIn: 4 * 60 * 60});
+    }, 'access', {expiresIn: '4h'});
 
     // Store access token and username in session
     req.session.authorization = {accessToken, username};
@@ -55,36 +55,34 @@ regd_users.post("/login", (req,res) => {
 regd_users.put("/auth/review/:isbn", (req, res) => {
   //Write your code here
   const review_param = req.query.review;
-  const username = req.session.username;
+  const username = req.session.authorization.username;
   const isbn = req.params.isbn;
   
   let book = books[isbn];
+  
     if(book) {
+        
         //get review list
-        let reviews = Object.values(book["reviews"]);
-        if(reviews.length > 0) {
-            let update_flg = false;
-            reviews.forEach(review => {
-                if(review["user"] === username) {
-                    // update review of customer logging
-                    review["comment"] = review_param;
-                    update_flg = true;   
-                }
-            });
-
-            if(!update_flg) {
-                // push new review
-                reviews.push({"user": username, "comment": review_param});
-                return res.status(200).send("Review added sucessfull!");
-            } else {
-                return res.status(200).send("Review exists, and updated with new review param!");
-            }
+        //let reviews = Object.values(book["reviews"]);
+        if (!book.reviews) {
+           book.reviews = {};
         }
+        //if exists -> update
+        if (book.reviews[username]) {
+            book.reviews[username].comment = review_param;
+            return res.status(200).send("Review updated!");
+        }
+        
+        // If not → add new
+        book.reviews[username] = {
+        user: username,
+        comment: review_param
+        }
+        console.log(books);
+        return res.status(200).send("Review added!");
     } else {
         return res.status(404).send("Not found any book!");
     }
-  
-  
 });
 
 module.exports.authenticated = regd_users;
