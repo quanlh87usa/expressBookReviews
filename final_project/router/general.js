@@ -41,7 +41,7 @@ public_users.get("/", function (req, res) {
 
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
+/*public_users.get('/isbn/:isbn',function (req, res) {
   //Write your code here
   const isbn = req.params.isbn;
   let book = books[isbn];
@@ -52,9 +52,19 @@ public_users.get('/isbn/:isbn',function (req, res) {
     res.send("Not found any book!");
   }
  });
+ */
+public_users.get('/isbn/:isbn',function (req, res) {
+    const isbn = req.params.isbn;
+
+    axios.get(`http://localhost:5000/isbn/${isbn}`)
+        .then(res.send(JSON.stringify(books[isbn], null, 4)))
+        .catch(error => {
+            res.status(500).json({ message: "Error fetching book", error: error.message });
+        });
+});
   
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
+/*public_users.get('/author/:author',function (req, res) {
   //Write your code here
   const author = req.params.author;
   let book = Object.values(books).filter((book) => book.author === author);
@@ -64,9 +74,20 @@ public_users.get('/author/:author',function (req, res) {
     res.send("Not found any book");
   }
 });
+*/
+public_users.get('/author/:author',function (req, res) {
+    const author = req.params.author;
+    const booksWithAuthor = Object.values(books).filter(book => book.author === author);
+    
+    axios.get(`http://localhost:5000/author/${author}`)
+        .then(res.send(JSON.stringify(booksWithAuthor, null, 4)))
+        .catch(error => {
+            res.status(500).json({ message: "Error fetching book", error: error.message });
+        });
+  });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
+/*public_users.get('/title/:title',function (req, res) {
   //Write your code here
   const title = req.params.title;
   let book = Object.values(books).filter((book) => book.title === title);
@@ -75,7 +96,18 @@ public_users.get('/title/:title',function (req, res) {
   } else {
     res.send("Not found any book");
   }
-});
+});*/
+public_users.get('/title/:title',function (req, res) {
+    const title = req.params.title;
+    const booksWithTitle = Object.values(books).filter(book => book.title === title);
+    
+    axios.get(`http://localhost:5000/title/${title}`)
+        .then(res.send(JSON.stringify(booksWithTitle, null, 4)))
+        .catch(error => {
+            res.status(500).json({ message: "Error fetching book", error: error.message });
+        });
+  });
+
 
 //  Get book review
 public_users.get('/review/:isbn',function (req, res) {
