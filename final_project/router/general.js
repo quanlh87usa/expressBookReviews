@@ -55,11 +55,15 @@ public_users.get("/", function (req, res) {
 public_users.get('/isbn/:isbn',function (req, res) {
     const isbn = req.params.isbn;
 
-    axios.get(`http://localhost:5000/isbn/${isbn}`)
-        .then(res.send(JSON.stringify(books[isbn], null, 4)))
-        .catch(error => {
-            res.status(500).json({ message: "Error fetching book", error: error.message });
+    const response = await axios.get(`http://localhost:5000/isbn/${isbn}`);
+  
+    res.status(200).json("successfull", response.data);
+    } catch (error) {
+        res.status(500).json({
+            message: "Error fetching book",
+            error: error.message
         });
+    }
 });
   
 // Get book details based on author
