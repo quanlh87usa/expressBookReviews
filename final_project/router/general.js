@@ -53,11 +53,12 @@ public_users.get("/", function (req, res) {
  });*/
 
 public_users.get('/isbn/:isbn', async function (req, res) {
-    const isbn = req.params.isbn;
+    try {
+      const isbn = req.params.isbn;
 
-    const response = await axios.get(`http://localhost:5000/isbn/${isbn}`);
+      const response = await axios.get(`http://localhost:5000/isbn/${isbn}`);
   
-    res.status(200).json("successfull", response.data);
+      res.status(200).json("successfull", response.data);
     } catch (error) {
         res.status(500).json({
             message: "Error fetching book",
